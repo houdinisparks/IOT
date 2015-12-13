@@ -1,6 +1,7 @@
 package com.example.yanyee.iotpet;
 
 import android.app.Activity;
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -9,6 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.LimitLine;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 
@@ -16,11 +22,16 @@ import java.util.ArrayList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.widget.RelativeLayout;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 /**
@@ -67,6 +78,8 @@ public class SummaryFragment extends Fragment{
     }
 
     public BarChart chart;
+    public RelativeLayout mainLayout;
+    public LineChart mChart;
 
 
     @Override
@@ -74,13 +87,61 @@ public class SummaryFragment extends Fragment{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
        View view = inflater.inflate(R.layout.fragment_summary, container, false);
-        //return inflater.inflate(R.layout.fragment_summary, container, false);
-        chart = (BarChart) view.findViewById(R.id.chart);
+
+        //initialise linechart
+        mChart = (LineChart) view.findViewById(R.id.lineChart);
+        //mChart.setOnChartValueSelectedListener((OnChartValueSelectedListener) (this));
+        mChart.setDescription("Amount of water consumed");
+
+        // enable touch gestures
+        mChart.setTouchEnabled(true);
+
+        // enable scaling and dragging
+        mChart.setDragEnabled(true);
+        mChart.setScaleEnabled(true);
+        mChart.setDrawGridBackground(false);
+
+        // if disabled, scaling can be done on x- and y-axis separately
+        mChart.setPinchZoom(true);
+
+        // set an alternative background color
+        mChart.setBackgroundColor(Color.LTGRAY);
+
+        LineData data = new LineData();
+        data.setValueTextColor(Color.WHITE);
+
+        // add empty data
+        mChart.setData(data);
+
+        // get the legend (only possible after setting data)
+        Legend l = mChart.getLegend();
+
+        l.setForm(Legend.LegendForm.LINE);
+        l.setTextColor(Color.WHITE);
+
+        XAxis xl = mChart.getXAxis();
+        xl.setTextColor(Color.WHITE);
+        xl.setDrawGridLines(false);
+        xl.setAvoidFirstLastClipping(true);
+
+        YAxis yl = mChart.getAxisLeft();
+        yl.setTextColor(Color.WHITE);
+        yl.setAxisMaxValue(100f);
+        yl.setDrawGridLines(true);
+
+        YAxis yl2 = mChart.getAxisRight();
+        yl2.setEnabled(false);
+
+
+
+        /*chart = (BarChart) view.findViewById(R.id.chart);
         BarData data = new BarData(getXAxisValues(), getDataSet());
         chart.setData(data);
         chart.setDescription("Amount of water consumed(ml)");
         chart.animateXY(2000, 2000);
-        chart.invalidate();
+        //LimitLine line = new LimitLine(1000f);
+        //data.addLimitLine(line);
+        chart.invalidate();*/
         return view;
     }
 
@@ -112,15 +173,103 @@ public class SummaryFragment extends Fragment{
         valueSet1.add(v1e5);
         BarEntry v1e6 = new BarEntry(875.000f, 5); // SAT
         valueSet1.add(v1e6);
-        BarEntry v1e7 = new BarEntry(980.000f, 5); // SUN
+        BarEntry v1e7 = new BarEntry(980.000f, 6); // SUN
         valueSet1.add(v1e7);
 
         BarDataSet barDataSet1 = new BarDataSet(valueSet1, "Water Consumed");
-        barDataSet1.setColors(ColorTemplate.COLORFUL_COLORS);
+        //barDataSet1.setColors(ColorTemplate.COLORFUL_COLORS);
 
         dataSets = new ArrayList<>();
         dataSets.add(barDataSet1);
         return dataSets;
+    }
+
+    private void addEntry(){
+        LineData data = mChart.getData();
+
+        if (data!= null){
+            LineDataSet set = data.getDataSetByIndex(0);
+            // set.addEntry(...); // can be called as well
+
+            if (set ==null){
+                set = createSet();
+                data.addDataSet(set);
+            }
+
+            data.addXValue("");
+            //add entry here
+            data.addEntry(new Entry((float) (Math.random()), set.getEntryCount()), 0);
+
+            mChart.notifyDataSetChanged();
+
+            // limit the number of visible entries
+            mChart.setVisibleXRangeMaximum(10);
+            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
+
+            // move to the latest entry
+            mChart.moveViewToX(data.getXValCount() - 121);
+
+            // this automatically refreshes the chart (calls invalidate())
+            // mChart.moveViewTo(data.getXValCount()-7, 55f,
+            // AxisDependency.LEFT);
+        }
+    }
+
+    private LineDataSet createSet(){
+        LineDataSet set = new LineDataSet(null, "Data from sensor");
+        set.setDrawCubic(true);
+        set.setCubicIntensity(0.2f);
+        set.setAxisDependency(YAxis.AxisDependency.LEFT);
+        set.setColor(ColorTemplate.getHoloBlue());
+        set.setCircleColor(ColorTemplate.getHoloBlue());
+        set.setLineWidth(2f);
+        set.setCircleSize(4f);
+        set.setFillAlpha(65);
+        set.setFillColor(ColorTemplate.getHoloBlue());
+        set.setHighLightColor(Color.rgb(244, 117, 177));
+        set.setValueTextColor(Color.WHITE);
+        set.setValueTextSize(10f);
+        set.setDrawValues(false);
+
+        return set;
+    }
+
+    private boolean mustStop = false;
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mustStop=true; // Stop the infinite loop
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                mustStop=false;
+                while (!mustStop) {
+
+                    getActivity().runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            addEntry(); //chart notified of update in addEntry method
+                        }
+                    });
+
+                    try {
+                        Thread.sleep(35);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 
     private ArrayList<String> getXAxisValues() {
@@ -175,5 +324,20 @@ public class SummaryFragment extends Fragment{
         // TODO: Update argument type and na
         public void onFragmentInteraction(Uri uri);
     }
+
+/*    public double calculateAmountDrank(String fromSensor){
+        double currentAmount = 0.0; //set how much?
+        double previousAmount = 0.0;
+        double amountDrank;
+
+        amountDrank = previousAmount - currentAmount;
+        if (amountDrank > 800) { //amount drank too much
+            //return some anomaly
+            returnError();
+        }else{
+            newLineEntry();
+        }
+        return 0.0;
+    }*/
 
 }
