@@ -13,25 +13,19 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 
 import java.util.ArrayList;
-import android.graphics.Color;
-import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 
-import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link SummaryFragment.OnFragmentInteractionListener} interface
+ * {@link _SummaryFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link SummaryFragment#newInstance} factory method to
+ * Use the {@link _SummaryFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SummaryFragment extends Fragment{
+public class _SummaryFragment extends Fragment{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -50,11 +44,11 @@ public class SummaryFragment extends Fragment{
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment SummaryFragment.
+     * @return A new instance of fragment _SummaryFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static SummaryFragment newInstance(String param1, String param2) {
-        SummaryFragment fragment = new SummaryFragment();
+    public static _SummaryFragment newInstance(String param1, String param2) {
+        _SummaryFragment fragment = new _SummaryFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -62,7 +56,7 @@ public class SummaryFragment extends Fragment{
         return fragment;
     }
 
-    public SummaryFragment() {
+    public _SummaryFragment() {
         // Required empty public constructor
     }
 

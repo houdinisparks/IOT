@@ -23,17 +23,24 @@ public class Publisher {
 
     private MqttClient client;
 
+    public Publisher(String brokerURL, String clientID) {
+        //We have to generate a unique Client id.
+        try {
+            client = new MqttClient(brokerURL ,clientID);
 
+        } catch (MqttException e) {
+            e.printStackTrace();
+            System.exit(1);
+
+        }
+    }
+    
     public Publisher() {
 
         //We have to generate a unique Client id.
         String clientId = getMACAddress() + "-pub";
-
-
         try {
-
             client = new MqttClient(BROKER_URL, clientId);
-
         } catch (MqttException e) {
             e.printStackTrace();
             System.exit(1);
@@ -46,7 +53,6 @@ public class Publisher {
         try {
             MqttConnectOptions options = new MqttConnectOptions();
             options.setCleanSession(false);
-            options.setWill(client.getTopic("home/LWT"), "I'm gone :(".getBytes(), 0, false);
 
             client.connect(options);
 
@@ -98,32 +104,22 @@ public class Publisher {
 
     public static String getMACAddress() {
         InetAddress ip;
-
         StringBuilder sb = new StringBuilder();
         try {
-
             ip = InetAddress.getLocalHost();
             System.out.println("Current IP address : " + ip.getHostAddress());
-
             NetworkInterface network = NetworkInterface.getByInetAddress(ip);
-
             byte[] mac = network.getHardwareAddress();
-
             System.out.print("Current MAC address : ");
-
             for (int i = 0; i < mac.length; i++) {
                 sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
             }
             System.out.println(sb.toString());
 
         } catch (UnknownHostException e) {
-
             e.printStackTrace();
-
         } catch (SocketException e) {
-
             e.printStackTrace();
-
         }
         return sb.toString();
     }
