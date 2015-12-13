@@ -1,8 +1,13 @@
 package com.example.yanyee.iotpet;
 
 import android.app.Activity;
+
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -12,6 +17,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.github.mikephil.charting.charts.LineChart;
 
 
 /**
@@ -67,12 +77,54 @@ public class _HomeFragment extends Fragment {
     }
 
 
+    private String data;
+
+    public static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            // Calculate ratios of height and width to requested height and width
+            final int heightRatio = Math.round((float) height / (float) reqHeight);
+            final int widthRatio = Math.round((float) width / (float) reqWidth);
+
+            // Choose the smallest ratio as inSampleSize value, this will guarantee
+            // a final image with both dimensions larger than or equal to the
+            // requested height and width.
+            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+
+        }
+
+        return inSampleSize;
+    }
+
+    public static Bitmap decodeSampledBitmapFromResource(Resources res, int resId,
+                                                         int reqWidth, int reqHeight) {
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(res, resId, options);
+
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeResource(res, resId, options);
+    }
+
     Button refresh;
     Button getStatus;
     TextView statusText;
     TextView amountOfWater;
+    TextView waterData;
 
-    String test;
     SharedPreferences settings;
     String newData;
     String curStatus;
@@ -83,23 +135,45 @@ public class _HomeFragment extends Fragment {
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
+        /*********Mays's Part (Adding Images) ************/
+        ImageView image = (ImageView) view.findViewById(R.id.imageView);
+        image.setImageBitmap(
+                decodeSampledBitmapFromResource(getResources(), R.drawable.image1, 500, 500));
+                /*data="600";
+        if(Integer.parseInt(data)<500){
+            image.setImageResource(R.drawable.image2);
+        }
+        else{
+            image.setImageResource(R.drawable.image1);
+        }*/
+        // Inflate the layout for this fragment
+
+        /********Yanyee's Part (Testing Mqtt Transmission******/
         amountOfWater = (TextView) view.findViewById(R.id.amountOfWater);
+        waterData = (TextView) view.findViewById(R.id.waterData);
         refresh = (Button) view.findViewById(R.id.Refresh);
         getStatus = (Button) view.findViewById(R.id.statusButton);
         statusText = (TextView) view.findViewById(R.id.statusText);
         settings = getPrefs(getActivity());
 
-        refresh.setOnClickListener(new View.OnClickListener() {
+        getStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                curStatus = settings.getString("Mqtt Status", "Not Found");
+                statusText.setText(curStatus);
+            }
+        });
 
+        refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view1) {
 
-                curStatus = settings.getString("Mqtt Status", "Not Found");
+
                 newData = settings.getString("newData", "Not Found");
-                amountOfWater.setText(newData);
-                statusText.setText(curStatus);
+                waterData.setText(newData);
+
                 //test = activity.getNewTest();
-                Toast.makeText(getActivity(), newData + " " + test, Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), newData, Toast.LENGTH_LONG).show();
             }
         });
         return view;
@@ -148,5 +222,8 @@ public class _HomeFragment extends Fragment {
         // TODO: Update argument type and name
         public void onFragmentInteraction(Uri uri);
     }
+
+    TextView amountDrank;
+
 
 }

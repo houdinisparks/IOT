@@ -46,13 +46,6 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
         fragmentManager = getFragmentManager();
         summaryFragment = new _SummaryFragment();
         homeFragment = new _HomeFragment();
-        test2 = "old";
-
-        Bundle bundle = new Bundle();
-        bundle.putString("test",test2);
-        bundle.putString("newData", newData);
-        homeFragment.setArguments(bundle);
-
         fragmentManager.beginTransaction().replace(R.id.content_frame, homeFragment).commit();
 
         settings = getSharedPreferences(MqttService.APP_ID, 0);

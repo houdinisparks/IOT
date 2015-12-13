@@ -35,6 +35,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -204,6 +205,7 @@ public class MqttService extends Service {
         if (!cm.getActiveNetworkInfo().isConnected()) // respect the user's request not to use data!
         {
             // user has disabled background data
+
             connectionStatus = MQTTConnectionStatus.NOTCONNECTED_DATADISABLED;
 
             // update the app to show that the connection has been disabled
@@ -483,6 +485,7 @@ public class MqttService extends Service {
         //
 
         if (isOnline() == false) {
+            Log.d(Tag, "isOnline == false");
             connectionStatus = MQTTConnectionStatus.NOTCONNECTED_WAITINGFORINTERNET;
 
             // inform the app that we are not connected any more
@@ -981,8 +984,8 @@ public class MqttService extends Service {
             e.printStackTrace();
         }
         return sb.toString();*/
-    }
 
+    }
     class mSubscribeCallback implements MqttCallback {
 
         @Override
