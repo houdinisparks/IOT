@@ -67,6 +67,19 @@ public class _HomeFragment extends Fragment {
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("newData", newData);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            newData = savedInstanceState.getString("newData");
+        }
+    }
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
@@ -126,7 +139,7 @@ public class _HomeFragment extends Fragment {
     TextView waterData;
 
     SharedPreferences settings;
-    String newData;
+    String newData = "";
     String curStatus;
 
     @Override
@@ -155,6 +168,7 @@ public class _HomeFragment extends Fragment {
         getStatus = (Button) view.findViewById(R.id.statusButton);
         statusText = (TextView) view.findViewById(R.id.statusText);
         settings = getPrefs(getActivity());
+        waterData.setText(newData);
 
         getStatus.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -167,13 +181,10 @@ public class _HomeFragment extends Fragment {
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view1) {
-
-
                 newData = settings.getString("newData", "Not Found");
                 waterData.setText(newData);
 
-                //test = activity.getNewTest();
-                Toast.makeText(getActivity(), newData, Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), newData + " " + System.currentTimeMillis(), Toast.LENGTH_LONG).show();
             }
         });
         return view;

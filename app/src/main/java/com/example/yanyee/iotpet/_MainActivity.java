@@ -3,21 +3,26 @@ package com.example.yanyee.iotpet;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.IBinder;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 
-public class _MainActivity extends AppCompatActivity implements _HomeFragment.OnFragmentInteractionListener,_SummaryFragment.OnFragmentInteractionListener{
+public class _MainActivity extends AppCompatActivity implements _HomeFragment.OnFragmentInteractionListener,_SummaryFragment.OnFragmentInteractionListener
+,_TestFragment.OnFragmentInteractionListener{
 
 
     NavigationView navigationView;
@@ -32,12 +37,16 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
     String test2;
     _HomeFragment homeFragment;
     _SummaryFragment summaryFragment;
+    _TestFragment testFragment;
     SharedPreferences settings;
+
+    MqttService mqttService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         drawerLayOut = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.nv_View);
@@ -46,6 +55,7 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
         fragmentManager = getFragmentManager();
         summaryFragment = new _SummaryFragment();
         homeFragment = new _HomeFragment();
+        testFragment = new _TestFragment();
         fragmentManager.beginTransaction().replace(R.id.content_frame, homeFragment).commit();
 
         settings = getSharedPreferences(MqttService.APP_ID, 0);
@@ -53,7 +63,6 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
         editor.putString("broker", "tcp://broker.mqttdashboard.com:1883");
         editor.putString("topic", "IOTPet/readings");
         editor.commit();
-
 
         statusUpdateIntentReceiver = new StatusUpdateReceiver();
         IntentFilter intentSFilter = new IntentFilter(MqttService.MQTT_STATUS_INTENT);
@@ -63,12 +72,29 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
         IntentFilter intentCFilter = new IntentFilter(MqttService.MQTT_MSG_RECEIVED_INTENT);
         registerReceiver(messageIntentReceiver, intentCFilter);
 
-
         Intent svc = new Intent(this, MqttService.class);
+        bindService(svc, mConnection, Context.BIND_AUTO_CREATE);
         startService(svc);
 
         setupDrawerContent(navigationView);
     }
+
+    public MqttService getMqttService() {
+        return mqttService;
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MqttService.LocalBinder<MqttService> binder = (MqttService.LocalBinder) service;
+            mqttService = binder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
 
 
@@ -97,6 +123,11 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
             case R.id.nav_second_fragment:
                 fragment = summaryFragment;
                 Toast.makeText(this, "_SummaryFragment Selected", Toast.LENGTH_SHORT).show();
+                break;
+
+            case R.id.nav_third_fragment:
+                fragment = testFragment;
+                Toast.makeText(this, "_TestFragment Selected", Toast.LENGTH_SHORT).show();
                 break;
 
             default:
@@ -168,6 +199,7 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
             editor.putString("newData", newData);
             editor.putString("newTopic", newTopic);
             editor.commit();
+
             //Toast.makeText(new _MainActivity() , newData + " :messageReceiver", Toast.LENGTH_SHORT).show();
 
         }
