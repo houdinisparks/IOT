@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -133,12 +134,14 @@ public class _HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        Typeface helv_font = Typeface.createFromAsset(getActivity().getAssets(),  "fonts/HelveticaRoundedLTStd-BdCn.otf");
+
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         /*********Mays's Part (Adding Images) ************/
         ImageView image = (ImageView) view.findViewById(R.id.imageView);
         image.setImageBitmap(
-                decodeSampledBitmapFromResource(getResources(), R.drawable.image1, 500, 500));
+                decodeSampledBitmapFromResource(getResources(), R.drawable.full1, 64, 110));
                 /*data="600";
         if(Integer.parseInt(data)<500){
             image.setImageResource(R.drawable.image2);
@@ -155,6 +158,11 @@ public class _HomeFragment extends Fragment {
         getStatus = (Button) view.findViewById(R.id.statusButton);
         statusText = (TextView) view.findViewById(R.id.statusText);
         settings = getPrefs(getActivity());
+
+        /******Zhenyang's adding fontssssssss *****************/
+        amountOfWater.setTypeface(helv_font);
+        waterData.setTypeface(helv_font);
+        statusText.setTypeface(helv_font);
 
         getStatus.setOnClickListener(new View.OnClickListener() {
             @Override
