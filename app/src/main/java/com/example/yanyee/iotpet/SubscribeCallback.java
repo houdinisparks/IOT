@@ -14,6 +14,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  */
 public class SubscribeCallback implements MqttCallback {
 
+
     @Override
     public void connectionLost(Throwable cause) {
         //This is called when the connection is lost. We could reconnect here.
@@ -31,5 +32,9 @@ public class SubscribeCallback implements MqttCallback {
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
         //no-op
+    }
+
+    public MqttMessage getMessage(String topic, MqttMessage message) {
+        return message;
     }
 }

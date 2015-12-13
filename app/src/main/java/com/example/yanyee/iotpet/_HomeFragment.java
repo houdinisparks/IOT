@@ -1,23 +1,28 @@
 package com.example.yanyee.iotpet;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link HomeFragment.OnFragmentInteractionListener} interface
+ * {@link _HomeFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link HomeFragment#newInstance} factory method to
+ * Use the {@link _HomeFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class HomeFragment extends Fragment {
+public class _HomeFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -35,11 +40,11 @@ public class HomeFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment.
+     * @return A new instance of fragment _HomeFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
+    public static _HomeFragment newInstance(String param1, String param2) {
+        _HomeFragment fragment = new _HomeFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -47,7 +52,7 @@ public class HomeFragment extends Fragment {
         return fragment;
     }
 
-    public HomeFragment() {
+    public _HomeFragment() {
         // Required empty public constructor
     }
 
@@ -59,18 +64,49 @@ public class HomeFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-
-
-
     }
 
 
+    Button refresh;
+    Button getStatus;
+    TextView statusText;
+    TextView amountOfWater;
+
+    String test;
+    SharedPreferences settings;
+    String newData;
+    String curStatus;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        amountOfWater = (TextView) view.findViewById(R.id.amountOfWater);
+        refresh = (Button) view.findViewById(R.id.Refresh);
+        getStatus = (Button) view.findViewById(R.id.statusButton);
+        statusText = (TextView) view.findViewById(R.id.statusText);
+        settings = getPrefs(getActivity());
+
+        refresh.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view1) {
+
+                curStatus = settings.getString("Mqtt Status", "Not Found");
+                newData = settings.getString("newData", "Not Found");
+                amountOfWater.setText(newData);
+                statusText.setText(curStatus);
+                //test = activity.getNewTest();
+                Toast.makeText(getActivity(), newData + " " + test, Toast.LENGTH_LONG).show();
+            }
+        });
+        return view;
+    }
+
+    public SharedPreferences getPrefs(Context context) {
+        return context.getSharedPreferences(MqttService.APP_ID, 0);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -96,6 +132,7 @@ public class HomeFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
+
 
     /**
      * This interface must be implemented by activities that contain this
