@@ -130,17 +130,17 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
         switch (item.getItemId()) {
             case R.id.nav_first_fragment:
                 fragment = homeFragment;
-                Toast.makeText(this, "_HomeFragment Selected", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "_HomeFragment Selected", Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.nav_second_fragment:
                 fragment = summaryFragment;
-                Toast.makeText(this, "_SummaryFragment Selected", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "_SummaryFragment Selected", Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.nav_third_fragment:
                 fragment = testFragment;
-                Toast.makeText(this, "_TestFragment Selected", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "_TestFragment Selected", Toast.LENGTH_SHORT).show();
                 break;
 
             default:

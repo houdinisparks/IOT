@@ -15,6 +15,9 @@ import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -139,6 +142,8 @@ public class _HomeFragment extends Fragment {
     TextView amountOfWater;
     TextView waterData;
 
+    TextView swipeTxt;
+
     SharedPreferences settings;
     String newData = "";
     String curStatus;
@@ -164,6 +169,8 @@ public class _HomeFragment extends Fragment {
         }*/
         // Inflate the layout for this fragment
 
+        swipeTxt = (TextView) view.findViewById(R.id.swipeTxt);
+
         /********Yanyee's Part (Testing Mqtt Transmission******/
         amountOfWater = (TextView) view.findViewById(R.id.amountOfWater);
         waterData = (TextView) view.findViewById(R.id.waterData);
@@ -177,6 +184,12 @@ public class _HomeFragment extends Fragment {
         amountOfWater.setTypeface(helv_font);
         waterData.setTypeface(helv_font);
         statusText.setTypeface(helv_font);
+        swipeTxt.setTypeface(helv_font);
+
+        Animation ani = AnimationUtils.loadAnimation(getActivity(), R.anim.bounce);
+        swipeTxt.startAnimation(ani);
+
+        //swipeTxt.setRotation(90); // rotate swipe text
 
         getStatus.setOnClickListener(new View.OnClickListener() {
             @Override
