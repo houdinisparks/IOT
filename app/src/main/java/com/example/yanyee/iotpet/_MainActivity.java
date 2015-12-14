@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.IBinder;
 import android.support.design.widget.NavigationView;
@@ -18,6 +19,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 
@@ -138,17 +140,17 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
         switch (item.getItemId()) {
             case R.id.nav_first_fragment:
                 fragment = homeFragment;
-                Toast.makeText(this, "_HomeFragment Selected", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "_HomeFragment Selected", Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.nav_second_fragment:
                 fragment = summaryFragment;
-                Toast.makeText(this, "_SummaryFragment Selected", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "_SummaryFragment Selected", Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.nav_third_fragment:
                 fragment = testFragment;
-                Toast.makeText(this, "_TestFragment Selected", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "_TestFragment Selected", Toast.LENGTH_SHORT).show();
                 break;
 
             default:
@@ -217,6 +219,19 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
         unregisterReceiver(httpDataReceiver);
 
 
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);}
     }
 
 

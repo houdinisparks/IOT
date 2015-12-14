@@ -3,19 +3,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center_horizontal|bottom"
-    tools:context="com.example.yanyee.iotpet._HomeFragment">
+    tools:context="com.example.yanyee.iotpet._HomeFragment"
+    >
+
+    <ImageView
+        android:id="@+id/bg"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/background"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop" />
 
     <!-- TODO: Update blank fragment layout -->
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="fill_parent"
-        android:layout_height="150dp"
+        android:layout_height="50dp"
 
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="75dp" />
+        android:layout_marginTop="140dp" />
 
 
     <Button
@@ -25,17 +34,18 @@
         android:text="@string/refresh"
         android:layout_above="@+id/statusButton"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="90dp" />
+        android:layout_marginBottom="160dp"
+        android:background="#FFFFFF"/>
 
     <Button
         android:id="@+id/statusButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="23dp"
+        android:layout_marginBottom="40dp"
         android:text="Get Status"
         android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/Refresh"
-        android:layout_toStartOf="@+id/Refresh" />
+        android:layout_centerHorizontal="true"
+        android:background="#FFFFFF"/>
 
     <TextView
         android:id="@+id/statusText"
@@ -43,10 +53,10 @@
         android:layout_height="wrap_content"
         android:text=""
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:layout_alignBottom="@+id/statusButton"
-        android:layout_toRightOf="@+id/statusButton"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
+        android:layout_alignParentBottom="true"
+        android:textColor="#FFFFFF"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -54,9 +64,10 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Water Consumed"
         android:id="@+id/amountOfWater"
-        android:layout_marginBottom="22dp"
+        android:layout_marginBottom="20dp"
         android:layout_above="@+id/Refresh"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:textColor="#FFFFFF"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -66,7 +77,22 @@
         android:id="@+id/waterData"
         android:layout_above="@+id/statusButton"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="40dp" />
+        android:layout_marginBottom="80dp"
+        android:textColor="#FFFFFF"/>
+
+    <com.example.yanyee.iotpet.VerticalTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Swipe Right for Menu"
+        android:id="@+id/swipeTxt"
+        android:layout_gravity="center_vertical|right"
+        android:gravity="top|center_horizontal"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="69dp"
+        android:textColor="#30cff1"/>
 
 
 </RelativeLayout>
