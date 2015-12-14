@@ -150,7 +150,7 @@ public class _SummaryFragment extends Fragment {
         YAxis yaxis = mChart.getAxisLeft();
         yaxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
         yaxis.setTextColor(Color.WHITE);
-        yaxis.setAxisMaxValue(100f);
+        yaxis.setAxisMaxValue(1000f);
         yaxis.setDrawGridLines(true);
 
         YAxis rightAxis = mChart.getAxisRight();
@@ -226,12 +226,12 @@ public class _SummaryFragment extends Fragment {
 
         ArrayList<BarEntry> valueSet1 = new ArrayList<>();
 
-        int i = 0;
+        int i = data.size() - 1;
         for (String key : data.keySet()) {
             float value = data.get(key);
             BarEntry barEntry = new BarEntry(value, i);
             valueSet1.add(barEntry);
-            i += 1;
+            i -= 1;
         }
 
         BarDataSet barDataSet1 = new BarDataSet(valueSet1, "Water Consumed");

@@ -21,8 +21,8 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 
-public class _MainActivity extends AppCompatActivity implements _HomeFragment.OnFragmentInteractionListener,_SummaryFragment.OnFragmentInteractionListener
-,_TestFragment.OnFragmentInteractionListener{
+public class _MainActivity extends AppCompatActivity implements _HomeFragment.OnFragmentInteractionListener, _SummaryFragment.OnFragmentInteractionListener
+        , _TestFragment.OnFragmentInteractionListener {
 
 
     NavigationView navigationView;
@@ -48,14 +48,22 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
         setContentView(R.layout.activity_main);
 
 
+        if (savedInstanceState != null) {
+            summaryFragment = (_SummaryFragment) getFragmentManager().getFragment(savedInstanceState, "summaryFragment");
+            testFragment = new _TestFragment();
+            homeFragment = (_HomeFragment) getFragmentManager().getFragment(savedInstanceState, "homeFragment");
+        } else {
+            summaryFragment = new _SummaryFragment();
+            homeFragment = new _HomeFragment();
+            testFragment = new _TestFragment();
+        }
+
+
         drawerLayOut = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.nv_View);
 
         //Initialise all Fragments.
         fragmentManager = getFragmentManager();
-        summaryFragment = new _SummaryFragment();
-        homeFragment = new _HomeFragment();
-        testFragment = new _TestFragment();
         fragmentManager.beginTransaction().replace(R.id.content_frame, homeFragment).commit();
 
         settings = getSharedPreferences(MqttService.APP_ID, 0);
@@ -77,7 +85,11 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
         startService(svc);
 
         setupDrawerContent(navigationView);
+
     }
+
+
+
 
     public MqttService getMqttService() {
         return mqttService;
@@ -97,7 +109,6 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
     };
 
 
-
     public void setupDrawerContent(NavigationView navigationView) {
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
@@ -114,9 +125,9 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
 
     public void selectDrawerItem(MenuItem item) {
         Fragment fragment;
-        switch(item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.nav_first_fragment:
-                fragment =  homeFragment;
+                fragment = homeFragment;
                 Toast.makeText(this, "_HomeFragment Selected", Toast.LENGTH_SHORT).show();
                 break;
 
@@ -170,31 +181,28 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
 
     }
 
-    public class StatusUpdateReceiver extends BroadcastReceiver
-    {
+    public class StatusUpdateReceiver extends BroadcastReceiver {
         @Override
-        public void onReceive(Context context, Intent intent)
-        {
+        public void onReceive(Context context, Intent intent) {
             Bundle notificationData = intent.getExtras();
             String newStatus = notificationData.getString(MqttService.MQTT_STATUS_MSG);
             SharedPreferences.Editor editor = settings.edit();
             editor.putString("Mqtt Status", newStatus);
             editor.putString("newTopic", newTopic);
             editor.commit();
-           // Toast.makeText( super , newStatus + " :statusReceiver", Toast.LENGTH_SHORT).show();
+            // Toast.makeText( super , newStatus + " :statusReceiver", Toast.LENGTH_SHORT).show();
 
         }
     }
-    public class MQTTMessageReceiver extends BroadcastReceiver
-    {
+
+    public class MQTTMessageReceiver extends BroadcastReceiver {
 
 
         @Override
-        public void onReceive(Context context, Intent intent)
-        {
+        public void onReceive(Context context, Intent intent) {
             Bundle notificationData = intent.getExtras();
             newTopic = notificationData.getString(MqttService.MQTT_MSG_RECEIVED_TOPIC);
-            newData  = notificationData.getString(MqttService.MQTT_MSG_RECEIVED_MSG);
+            newData = notificationData.getString(MqttService.MQTT_MSG_RECEIVED_MSG);
             SharedPreferences.Editor editor = settings.edit();
             editor.putString("newData", newData);
             editor.putString("newTopic", newTopic);

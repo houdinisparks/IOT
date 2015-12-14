@@ -21,6 +21,7 @@ import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
@@ -38,6 +39,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.LogRecord;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -138,12 +142,44 @@ public class MqttService extends Service {
     //
     private LocalBinder<MqttService> mBinder;
     private String Tag = "Service.Status.IOTPet";
+    int count = 0;
 
+    private void storeData() {
+        Log.d("storeDAta", String.valueOf(count));
+        count += 1;
+        timeNow = System.currentTimeMillis();
+        saveTimeNow(); //save time if not yet saved.
+        //calculate total amount drank
+        if (fifteenMinutesHasPassed()) {
+            storeData(String.valueOf(xLabel), totalAmountDrank);
+            xLabel += 15;
+        }
+        else {
+            storeData(String.valueOf(xLabel), totalAmountDrank);
+        }
+
+    }
+
+    Timer timer;
+    final android.os.Handler handler = new android.os.Handler();
 
     @Override
     public void onCreate() {
         super.onCreate();
+
         Log.d(Tag, "onCreate()");
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        storeData();
+                    }
+                });
+            }
+        }, 0, 15000);
 
         // reset status variable to initial state
         connectionStatus = MQTTConnectionStatus.INITIAL;
@@ -552,17 +588,12 @@ public class MqttService extends Service {
 
         Log.d(Tag, "publishArrived");
         Log.d(Tag, "DataCache : " + dataCache.toString());
-        timeNow = System.currentTimeMillis();
-        saveTimeNow(); //save time if not yet saved.
-        calculateAmountDrank(messageBody);
+        Log.d(Tag, "timeNow:" + timeNow + " fifteenMinustesAfter : " + fifteenMinsAfter);
 
-        if (xLabel <= 15) {
-            storeData(String.valueOf(xLabel), totalAmountDrank);
-        } else {
-            if (fifteenMinutesHasPassed()) {
-                storeData(String.valueOf(xLabel), amountDrankInFifteenMins);
-            }
-        }
+        Log.d(Tag, "Time Left till 15 mins: " + (fifteenMinsAfter - timeNow));
+
+
+        calculateAmountDrank(messageBody);
 
         PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
         PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MQTT");
@@ -963,7 +994,7 @@ public class MqttService extends Service {
     private boolean timeSaved = false;
     private long timeNow;
     private long saveTime;
-    private long fifteenMinsAfter; //90000 = 15mins
+    private long fifteenMinsAfter; //900000 = 15mins
     private int amountDrankInFifteenMins;
     private int totalAmountDrank = 0;
     private int xLabel = 15;
@@ -975,16 +1006,13 @@ public class MqttService extends Service {
         totalAmountDrank += convData;
         if (!fifteenMinutesHasPassed()) {
             amountDrankInFifteenMins += convData;
-        } else {
-            xLabel += 15;
-            amountDrankInFifteenMins = 0;
         }
     }
 
     private void saveTimeNow() {
         if (!timeSaved) {
             saveTime = timeNow;
-            fifteenMinsAfter = saveTime + 900000;
+            fifteenMinsAfter = saveTime + 90000;
             timeSaved = true;
         }
     }
