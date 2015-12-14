@@ -94,7 +94,7 @@ public class _SummaryFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         if (savedInstanceState != null) {
-            data = (Hashtable<String,Integer>)savedInstanceState.getSerializable("new Data");
+            data = (Hashtable<String,Float>)savedInstanceState.getSerializable("new Data");
         }
     }
 
@@ -106,7 +106,7 @@ public class _SummaryFragment extends Fragment {
 
     BarChart mChart;
     TextView dataCache;
-    Hashtable<String, Integer> data;
+    Hashtable<String, Float> data;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -116,7 +116,7 @@ public class _SummaryFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_summary, container, false);
         dataCache = (TextView) view.findViewById(R.id.dataCache);
-        data = ((_MainActivity) getActivity()).getMqttService().getStoredData();
+        data = ((_MainActivity) getActivity()).getHttpService().getStoredData();
 
         //initialise barchart
         mChart = (BarChart) view.findViewById(R.id.chart);
@@ -192,7 +192,6 @@ public class _SummaryFragment extends Fragment {
     }
 
 
-    MQTTDataReceiver mqttDataReceiver;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -203,23 +202,12 @@ public class _SummaryFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        mqttDataReceiver = new MQTTDataReceiver();
-        IntentFilter intentFilter = new IntentFilter(MqttService.MQTT_DATA_RECEIVED);
-        getActivity().registerReceiver(mqttDataReceiver, intentFilter);
+
 
     }
 
 
-    public class MQTTDataReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
 
-            //MqttService service = ((_MainActivity) getActivity()).getMqttService();
-            //data = ((_MainActivity) getActivity()).getMqttService().getStoredData();
-            String blu = "hello";
-            dataCache.setText(blu);
-        }
-    }
 
 
     private ArrayList<BarDataSet> setDataSet() {

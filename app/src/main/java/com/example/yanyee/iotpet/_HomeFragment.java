@@ -191,7 +191,7 @@ public class _HomeFragment extends Fragment {
     }
 
     public SharedPreferences getPrefs(Context context) {
-        return context.getSharedPreferences(MqttService.APP_ID, 0);
+        return context.getSharedPreferences(HttpService.APP_ID, 0);
     }
 
     // TODO: Rename method, update argument and hook method into UI event

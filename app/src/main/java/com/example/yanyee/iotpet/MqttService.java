@@ -28,6 +28,10 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+
+import com.macroyau.thingspeakandroid.ThingSpeakChannel;
+import com.macroyau.thingspeakandroid.model.ChannelFeed;
+
 import org.eclipse.paho.client.mqttv3.*;
 
 import java.lang.ref.WeakReference;
@@ -166,6 +170,7 @@ public class MqttService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
 
         Log.d(Tag, "onCreate()");
         timer = new Timer();

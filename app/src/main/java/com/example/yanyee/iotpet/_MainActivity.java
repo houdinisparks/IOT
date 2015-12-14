@@ -21,6 +21,14 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class _MainActivity extends AppCompatActivity implements _HomeFragment.OnFragmentInteractionListener, _SummaryFragment.OnFragmentInteractionListener
         , _TestFragment.OnFragmentInteractionListener {
 
@@ -30,8 +38,8 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
     FragmentManager fragmentManager;
     private String[] contents = {"_HomeFragment", "_SummaryFragment"};
 
-    private StatusUpdateReceiver statusUpdateIntentReceiver;
-    private MQTTMessageReceiver messageIntentReceiver;
+    private HTTPDataReceiver httpDataReceiver;
+
     String newTopic;
     String newData;
     String test2;
@@ -39,14 +47,24 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
     _SummaryFragment summaryFragment;
     _TestFragment testFragment;
     SharedPreferences settings;
-
+    String Tag = "ThingSpeak";
     MqttService mqttService;
+    HttpService httpService;
+    JSONObject jsonObject;
+    String something;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Log.d("json", jsonObject.toString());
+//        try {
+//            Toast.makeText(this, jsonObject.getString("field1"),Toast.LENGTH_LONG).show();
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+        settings = getSharedPreferences(HttpService.APP_ID, 0);
 
         if (savedInstanceState != null) {
             summaryFragment = (_SummaryFragment) getFragmentManager().getFragment(savedInstanceState, "summaryFragment");
@@ -66,40 +84,32 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
         fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.content_frame, homeFragment).commit();
 
-        settings = getSharedPreferences(MqttService.APP_ID, 0);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putString("broker", "tcp://broker.mqttdashboard.com:1883");
-        editor.putString("topic", "IOTPet/readings");
-        editor.commit();
+        httpDataReceiver = new HTTPDataReceiver();
+        IntentFilter intentLFilter = new IntentFilter(HttpService.HTTP_DATA_RECEIVED_INTENT);
+        registerReceiver(httpDataReceiver, intentLFilter);
 
-        statusUpdateIntentReceiver = new StatusUpdateReceiver();
-        IntentFilter intentSFilter = new IntentFilter(MqttService.MQTT_STATUS_INTENT);
-        registerReceiver(statusUpdateIntentReceiver, intentSFilter);
+        Intent svc1= new Intent(this, HttpService.class);
+        bindService(svc1, mConnection, BIND_AUTO_CREATE);
+        startService(svc1);
 
-        messageIntentReceiver = new MQTTMessageReceiver();
-        IntentFilter intentCFilter = new IntentFilter(MqttService.MQTT_MSG_RECEIVED_INTENT);
-        registerReceiver(messageIntentReceiver, intentCFilter);
 
-        Intent svc = new Intent(this, MqttService.class);
-        bindService(svc, mConnection, Context.BIND_AUTO_CREATE);
-        startService(svc);
 
         setupDrawerContent(navigationView);
 
     }
 
 
-
-
-    public MqttService getMqttService() {
-        return mqttService;
+    public HttpService getHttpService() {
+        return httpService;
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            MqttService.LocalBinder<MqttService> binder = (MqttService.LocalBinder) service;
-            mqttService = binder.getService();
+
+            HttpService.LocalBinder<HttpService> binder = (HttpService.LocalBinder) service;
+            httpService = binder.getService();
+
         }
 
         @Override
@@ -181,32 +191,19 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
 
     }
 
-    public class StatusUpdateReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Bundle notificationData = intent.getExtras();
-            String newStatus = notificationData.getString(MqttService.MQTT_STATUS_MSG);
-            SharedPreferences.Editor editor = settings.edit();
-            editor.putString("Mqtt Status", newStatus);
-            editor.putString("newTopic", newTopic);
-            editor.commit();
-            // Toast.makeText( super , newStatus + " :statusReceiver", Toast.LENGTH_SHORT).show();
 
-        }
-    }
-
-    public class MQTTMessageReceiver extends BroadcastReceiver {
+    public class HTTPDataReceiver extends BroadcastReceiver {
 
 
         @Override
         public void onReceive(Context context, Intent intent) {
             Bundle notificationData = intent.getExtras();
-            newTopic = notificationData.getString(MqttService.MQTT_MSG_RECEIVED_TOPIC);
-            newData = notificationData.getString(MqttService.MQTT_MSG_RECEIVED_MSG);
+            newData = notificationData.getString(HttpService.HTTP_DATA_RECEIVED);
             SharedPreferences.Editor editor = settings.edit();
             editor.putString("newData", newData);
-            editor.putString("newTopic", newTopic);
             editor.commit();
+
+            Log.d(Tag, "received broadcast Message");
 
             //Toast.makeText(new _MainActivity() , newData + " :messageReceiver", Toast.LENGTH_SHORT).show();
 
@@ -217,8 +214,8 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
     protected void onDestroy() {
 
         super.onDestroy();
-        unregisterReceiver(statusUpdateIntentReceiver);
-        unregisterReceiver(messageIntentReceiver);
+        unregisterReceiver(httpDataReceiver);
+
 
     }
 
