@@ -1,66 +1,86 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.yanyee.iotpet._HomeFragment">
+    android:layout_gravity="center_horizontal|bottom"
+    tools:context="com.example.yanyee.iotpet._HomeFragment"
+    >
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <ImageView
+        android:id="@+id/bg"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/background"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop" />
 
-        <!-- TODO: Update blank fragment layout -->
-        <TextView
-            android:id="@+id/waterConsumed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_marginBottom="155dp"
-            android:text="@string/waterConsumed"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+    <!-- TODO: Update blank fragment layout -->
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/refresh"
-            android:id="@+id/Refresh"
-            android:layout_marginTop="28dp"
-            android:layout_below="@+id/amountOfWater"
-            android:layout_centerHorizontal="true" />
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text=""
-            android:id="@+id/amountOfWater"
-            android:layout_alignTop="@+id/waterConsumed"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="64dp" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="140dp" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Get Status"
-            android:id="@+id/statusButton"
-            android:layout_marginRight="18dp"
-            android:layout_marginEnd="18dp"
-            android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@+id/amountOfWater"
-            android:layout_toStartOf="@+id/amountOfWater"
-            android:layout_marginBottom="20dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text=""
-            android:id="@+id/statusText"
-            android:layout_alignBottom="@+id/statusButton"
-            android:layout_toRightOf="@+id/amountOfWater"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+    <Button
+        android:id="@+id/Refresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh"
+        android:layout_above="@+id/statusButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="160dp"
+        android:background="#FFFFFF"/>
 
-    </RelativeLayout>
+    <Button
+        android:id="@+id/statusButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:text="Get Status"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="#FFFFFF"/>
 
-</FrameLayout>
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
+        android:layout_alignParentBottom="true"
+        android:textColor="#FFFFFF"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Water Consumed"
+        android:id="@+id/amountOfWater"
+        android:layout_marginBottom="20dp"
+        android:layout_above="@+id/Refresh"
+        android:layout_centerHorizontal="true"
+        android:textColor="#FFFFFF"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text=""
+        android:id="@+id/waterData"
+        android:layout_above="@+id/statusButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="80dp"
+        android:textColor="#FFFFFF"/>
+
+
+</RelativeLayout>
+
+

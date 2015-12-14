@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
@@ -14,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 
@@ -46,13 +48,6 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
         fragmentManager = getFragmentManager();
         summaryFragment = new _SummaryFragment();
         homeFragment = new _HomeFragment();
-        test2 = "old";
-
-        Bundle bundle = new Bundle();
-        bundle.putString("test",test2);
-        bundle.putString("newData", newData);
-        homeFragment.setArguments(bundle);
-
         fragmentManager.beginTransaction().replace(R.id.content_frame, homeFragment).commit();
 
         settings = getSharedPreferences(MqttService.APP_ID, 0);
@@ -187,6 +182,19 @@ public class _MainActivity extends AppCompatActivity implements _HomeFragment.On
         unregisterReceiver(statusUpdateIntentReceiver);
         unregisterReceiver(messageIntentReceiver);
 
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);}
     }
 
 
