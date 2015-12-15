@@ -21,11 +21,16 @@ import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
+
+
+import com.macroyau.thingspeakandroid.ThingSpeakChannel;
+import com.macroyau.thingspeakandroid.model.ChannelFeed;
 
 import org.eclipse.paho.client.mqttv3.*;
 
@@ -38,6 +43,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.LogRecord;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -57,6 +65,7 @@ public class MqttService extends Service {
     public static final String MQTT_MSG_RECEIVED_INTENT = "iotpet.MSGRECEIVED";
     public static final String MQTT_MSG_RECEIVED_TOPIC = "iotpet.MSGRECEIVED_TOPIC";
     public static final String MQTT_MSG_RECEIVED_MSG = "iotpet.MSGRECEIVED_MSGBODY";
+    public static final String MQTT_DATA_RECEIVED = "iotpet.DATA_RECEIVED";
 
     // constants used to tell the Activity UI the connection status
     //actionr that took place and is being reported.
@@ -137,12 +146,45 @@ public class MqttService extends Service {
     //
     private LocalBinder<MqttService> mBinder;
     private String Tag = "Service.Status.IOTPet";
+    int count = 0;
 
+    private void storeData() {
+        Log.d("storeDAta", String.valueOf(count));
+        count += 1;
+        timeNow = System.currentTimeMillis();
+        saveTimeNow(); //save time if not yet saved.
+        //calculate total amount drank
+        if (fifteenMinutesHasPassed()) {
+            storeData(String.valueOf(xLabel), totalAmountDrank);
+            xLabel += 15;
+        }
+        else {
+            storeData(String.valueOf(xLabel), totalAmountDrank);
+        }
+
+    }
+
+    Timer timer;
+    final android.os.Handler handler = new android.os.Handler();
 
     @Override
     public void onCreate() {
         super.onCreate();
+
+
         Log.d(Tag, "onCreate()");
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        storeData();
+                    }
+                });
+            }
+        }, 0, 15000);
 
         // reset status variable to initial state
         connectionStatus = MQTTConnectionStatus.INITIAL;
@@ -359,6 +401,13 @@ public class MqttService extends Service {
         sendBroadcast(broadcastIntent);
     }
 
+    private void broadcastData() {
+        Log.d(Tag, "brodcastDAta activated.");
+        Intent broadcastIntent = new Intent();
+        broadcastIntent.setAction(MQTT_DATA_RECEIVED);
+        sendBroadcast(broadcastIntent);
+    }
+
     // methods used to notify the user of what has happened for times when
     //  the app Activity UI isn't running
 
@@ -387,16 +436,17 @@ public class MqttService extends Service {
 
     /************************************************************************/
     /*    METHODS - binding that allows access from the Actitivy            */
+
     /************************************************************************/
 
     // trying to do local binding while minimizing leaks - code thanks to
     //   Geoff Bruckner - which I found at
     //   http://groups.google.com/group/cw-android/browse_thread/thread/d026cfa71e48039b/c3b41c728fedd0e7?show_docid=c3b41c728fedd0e7
-
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
     }
+    //mBinder is of LocalBinder Type
 
     public class LocalBinder<S> extends Binder {
         private WeakReference<S> mService;
@@ -412,6 +462,8 @@ public class MqttService extends Service {
         public void close() {
             mService = null;
         }
+
+
     }
     //
     // public methods that can be used by Activities that bind to the Service
@@ -531,11 +583,23 @@ public class MqttService extends Service {
      *   callback - called when we receive a message from the server
      */
 
+
     public void publishArrived(String topic, MqttMessage message, int qos, boolean retained) {
         // we protect against the phone switching off while we're doing this
         //  by requesting a wake lock - we request the minimum possible wake
         //  lock - just enough to keep the CPU running until we've finished
+
+        String messageBody = message.toString();
+
         Log.d(Tag, "publishArrived");
+        Log.d(Tag, "DataCache : " + dataCache.toString());
+        Log.d(Tag, "timeNow:" + timeNow + " fifteenMinustesAfter : " + fifteenMinsAfter);
+
+        Log.d(Tag, "Time Left till 15 mins: " + (fifteenMinsAfter - timeNow));
+
+
+        calculateAmountDrank(messageBody);
+
         PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
         PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MQTT");
         wl.acquire();
@@ -545,24 +609,24 @@ public class MqttService extends Service {
         //   this is not an MQTT thing - just me making as assumption about what
         //   data I will be receiving - your app doesn't have to send/receive
         //   strings - anything that can be sent as bytes is valid
-        String messageBody = message.toString();
+
 
         //
         //  for times when the app's Activity UI is not running, the Service
         //   will need to safely store the data that it receives
         //if (addReceivedMessageToStore(topic, messageBody)) {
-            // this is a new message - a value we haven't seen before
+        // this is a new message - a value we haven't seen before
 
-            //
-            // inform the app (for times when the Activity UI is running) of the
-            //   received message so the app UI can be updated with the new data
-            broadcastReceivedMessage(topic, messageBody);
-
-            //
-            // inform the user (for times when the Activity UI isn't running)
-            //   that there is new data available
-            notifyUser("New data received", topic, messageBody);
-       // }
+        //
+        // inform the app (for times when the Activity UI is running) of the
+        //   received message so the app UI can be updated with the new data
+        broadcastReceivedMessage(topic, String.valueOf(totalAmountDrank));
+        broadcastData();
+        //
+        // inform the user (for times when the Activity UI isn't running)
+        //   that there is new data available
+        notifyUser("New data received", topic, String.valueOf(messageBody));
+        // }
 
         // receiving this message will have kept the connection alive for us, so
         //  we take advantage of this to postpone the next scheduled ping
@@ -661,7 +725,7 @@ public class MqttService extends Service {
     }
 
     /*
-     * Send a request to the message broker to be sent messages published with
+     * Send a request to the message broker to be sent messages ed with
      *  the specified topic name. Wildcards are allowed.
      */
    /* private void subscribeToTopic(String topicName) {
@@ -847,7 +911,6 @@ public class MqttService extends Service {
     }
 
 
-
     //added push notifications from server that show children drank water.
 
     public class PingSender extends BroadcastReceiver {
@@ -907,36 +970,82 @@ public class MqttService extends Service {
 
     // stored internally
 
-    private Hashtable<String, String> dataCache = new Hashtable<String, String>();
+    private Hashtable<String, Integer> dataCache = new Hashtable<String, Integer>();
 
-    private boolean addReceivedMessageToStore(String key, String value) {
-        String previousValue = null;
+//    private boolean addReceivedMessageToStore(String key, String value) {
+//        String previousValue = null;
+//        if(fifteenMinutesHasPassed()) {
+//            if (value.length() == 0) {
+//                previousValue = dataCache.remove(key);
+//            } else {
+//                previousValue = dataCache.put(key, value);
+//            }
+//        }
+//
+//        // is this a new value? or am I receiving something I already knew?
+//        //  we return true if this is something new
+//        return ((previousValue == null) ||
+//                (previousValue.equals(value) == false));
+//    }
 
-        if (value.length() == 0) {
-            previousValue = dataCache.remove(key);
-        } else {
-            previousValue = dataCache.put(key, value);
+    private void storeData(String key, int newData) {
+        dataCache.put(key, newData);
+    }
+
+    public Hashtable<String, Integer> getStoredData() {
+        return dataCache;
+    }
+
+    private boolean timeSaved = false;
+    private long timeNow;
+    private long saveTime;
+    private long fifteenMinsAfter; //900000 = 15mins
+    private int amountDrankInFifteenMins;
+    private int totalAmountDrank = 0;
+    private int xLabel = 15;
+
+
+    //within the period of 15 mins, accumulate the water
+    private void calculateAmountDrank(String newData) {
+        int convData = Integer.parseInt(newData);
+        totalAmountDrank += convData;
+        if (!fifteenMinutesHasPassed()) {
+            amountDrankInFifteenMins += convData;
         }
+    }
 
-        // is this a new value? or am I receiving something I already knew?
-        //  we return true if this is something new
-        return ((previousValue == null) ||
-                (previousValue.equals(value) == false));
+    private void saveTimeNow() {
+        if (!timeSaved) {
+            saveTime = timeNow;
+            fifteenMinsAfter = saveTime + 90000;
+            timeSaved = true;
+        }
+    }
+
+    private boolean fifteenMinutesHasPassed() {
+        if (timeNow > fifteenMinsAfter) {
+            timeSaved = false;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // provide a public interface, so Activities that bind to the Service can
     //  request access to previously received messages
 
     public void rebroadcastReceivedMessages() {
-        Enumeration<String> e = dataCache.keys();
-        while (e.hasMoreElements()) {
-            Log.d(Tag, e.nextElement());
-
-            String nextKey = e.nextElement();
-            String nextValue = dataCache.get(nextKey);
-
-            broadcastReceivedMessage(nextKey, nextValue);
-        }
+//        Enumeration<String> e = dataCache.keys();
+//        while (e.hasMoreElements()) {
+//            Log.d(Tag, "rebroadcasting : " + e.nextElement());
+//
+//            String nextKey = e.nextElement();
+//            String nextValue = dataCache.get(nextKey).toString();
+//
+//            broadcastReceivedMessage(nextKey, nextValue);
+//        }
+        String amountDrank = String.valueOf(totalAmountDrank);
+        broadcastReceivedMessage("Total Amount Drank", amountDrank);
     }
 
     /************************************************************************/
@@ -954,8 +1063,6 @@ public class MqttService extends Service {
 
         return false;
     }
-
-
 
 
     public String getMACAddress() {
@@ -986,6 +1093,8 @@ public class MqttService extends Service {
         return sb.toString();*/
 
     }
+
+
     class mSubscribeCallback implements MqttCallback {
 
         @Override
@@ -996,7 +1105,8 @@ public class MqttService extends Service {
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
             System.out.println("Message arrived. Topic: " + topic + "  Message: " + message.toString());
-            publishArrived(topic,message,0,false);
+            publishArrived(topic, message, 0, false);
+
 
             if ("home/LWT".equals(topic)) {
                 System.err.println("Sensor gone!");

@@ -80,6 +80,20 @@
         android:layout_marginBottom="80dp"
         android:textColor="#FFFFFF"/>
 
+    <com.example.yanyee.iotpet.VerticalTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Swipe Right for Menu"
+        android:id="@+id/swipeTxt"
+        android:layout_gravity="center_vertical|right"
+        android:gravity="top|center_horizontal"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="69dp"
+        android:textColor="#30cff1"/>
+
 
 </RelativeLayout>
 

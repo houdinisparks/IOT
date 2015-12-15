@@ -1,10 +1,17 @@
 package com.example.yanyee.iotpet;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,20 +25,28 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Map;
+
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.ChartData;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
+
+import org.w3c.dom.Text;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -41,7 +56,7 @@ import com.github.mikephil.charting.utils.ColorTemplate;
  * Use the {@link _SummaryFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class _SummaryFragment extends Fragment{
+public class _SummaryFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -56,7 +71,6 @@ public class _SummaryFragment extends Fragment{
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
-     *
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
@@ -76,60 +90,89 @@ public class _SummaryFragment extends Fragment{
         // Required empty public constructor
     }
 
-    public BarChart chart;
-    public RelativeLayout mainLayout;
-    public LineChart mChart;
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            data = (Hashtable<String,Float>)savedInstanceState.getSerializable("new Data");
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("newData" , data);
+    }
+
+    BarChart mChart;
+    TextView dataCache;
+    Hashtable<String, Float> data;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-       View view = inflater.inflate(R.layout.fragment_summary, container, false);
 
-        //initialise linechart
-        mChart = (LineChart) view.findViewById(R.id.lineChart);
+
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_summary, container, false);
+        dataCache = (TextView) view.findViewById(R.id.dataCache);
+        data = ((_MainActivity) getActivity()).getHttpService().getStoredData();
+
+        //initialise barchart
+        mChart = (BarChart) view.findViewById(R.id.chart);
         //mChart.setOnChartValueSelectedListener((OnChartValueSelectedListener) (this));
-        mChart.setDescription("Amount of water consumed");
+        mChart.setDescription("Amount of Water Consumed");
 
         // enable touch gestures
         mChart.setTouchEnabled(true);
+        mChart.setDragEnabled(true);
+        mChart.setDrawValueAboveBar(true);
 
         // enable scaling and dragging
-        mChart.setDragEnabled(true);
-        mChart.setScaleEnabled(true);
+        mChart.setScaleEnabled(false);
         mChart.setDrawGridBackground(false);
 
         // if disabled, scaling can be done on x- and y-axis separately
-        mChart.setPinchZoom(true);
+        mChart.setPinchZoom(false);
 
         // set an alternative background color
         mChart.setBackgroundColor(Color.LTGRAY);
 
-        LineData data = new LineData();
-        data.setValueTextColor(Color.WHITE);
+        //setting the Axis and the Target Limitlines
+        XAxis xaxis = mChart.getXAxis();
+        xaxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xaxis.setTextColor(Color.WHITE);
+        xaxis.setDrawGridLines(false);
+        xaxis.setAvoidFirstLastClipping(true);
 
-        // add empty data
-        mChart.setData(data);
+
+
+        YAxis yaxis = mChart.getAxisLeft();
+        yaxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
+        yaxis.setTextColor(Color.WHITE);
+        yaxis.setAxisMaxValue(1000f);
+        yaxis.setDrawGridLines(true);
+
+        YAxis rightAxis = mChart.getAxisRight();
+        rightAxis.setDrawGridLines(false);
+        rightAxis.setLabelCount(8, false);
+        rightAxis.setEnabled(false);
+
+        //Setting a target
+        LimitLine target = new LimitLine(50f, "Target");
+        target.setLineColor(Color.GREEN);
+        target.setLineWidth(4f);
+        target.setTextColor(Color.GREEN);
+        target.setTextSize(12f);
+        yaxis.addLimitLine(target);
 
         // get the legend (only possible after setting data)
-        Legend l = mChart.getLegend();
 
-        l.setForm(Legend.LegendForm.LINE);
-        l.setTextColor(Color.WHITE);
 
-        XAxis xl = mChart.getXAxis();
-        xl.setTextColor(Color.WHITE);
-        xl.setDrawGridLines(false);
-        xl.setAvoidFirstLastClipping(true);
-
-        YAxis yl = mChart.getAxisLeft();
-        yl.setTextColor(Color.WHITE);
-        yl.setAxisMaxValue(100f);
-        yl.setDrawGridLines(true);
-
-        YAxis yl2 = mChart.getAxisRight();
-        yl2.setEnabled(false);
-
+        //implement a setData method here
+        BarData barData = new BarData(getXAxisValues(), setDataSet());
+        mChart.setData(barData);
+        mChart.animateXY(2000, 2000);
 
 
         /*chart = (BarChart) view.findViewById(R.id.chart);
@@ -140,8 +183,15 @@ public class _SummaryFragment extends Fragment{
         //LimitLine line = new LimitLine(1000f);
         //data.addLimitLine(line);
         chart.invalidate();*/
+
+        Legend l = mChart.getLegend();
+        l.setForm(Legend.LegendForm.LINE);
+        l.setTextColor(Color.WHITE);
+        mChart.invalidate();
         return view;
     }
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -153,36 +203,34 @@ public class _SummaryFragment extends Fragment{
         }
 
 
+
     }
 
-    private ArrayList<BarDataSet> getDataSet() {
-        ArrayList<BarDataSet> dataSets = null;
+
+
+
+
+    private ArrayList<BarDataSet> setDataSet() {
 
         ArrayList<BarEntry> valueSet1 = new ArrayList<>();
-        BarEntry v1e1 = new BarEntry(875.000f, 0); // MON
-        valueSet1.add(v1e1);
-        BarEntry v1e2 = new BarEntry(1020.000f, 1); // TUE
-        valueSet1.add(v1e2);
-        BarEntry v1e3 = new BarEntry(1200.000f, 2); // WED
-        valueSet1.add(v1e3);
-        BarEntry v1e4 = new BarEntry(1120.000f, 3); // THURS
-        valueSet1.add(v1e4);
-        BarEntry v1e5 = new BarEntry(900.000f, 4); // FRI
-        valueSet1.add(v1e5);
-        BarEntry v1e6 = new BarEntry(875.000f, 5); // SAT
-        valueSet1.add(v1e6);
-        BarEntry v1e7 = new BarEntry(980.000f, 6); // SUN
-        valueSet1.add(v1e7);
+
+        int i = data.size() - 1;
+        for (String key : data.keySet()) {
+            float value = data.get(key);
+            BarEntry barEntry = new BarEntry(value, i);
+            valueSet1.add(barEntry);
+            i -= 1;
+        }
 
         BarDataSet barDataSet1 = new BarDataSet(valueSet1, "Water Consumed");
         //barDataSet1.setColors(ColorTemplate.COLORFUL_COLORS);
 
-        dataSets = new ArrayList<>();
+        ArrayList<BarDataSet> dataSets = new ArrayList<>();
         dataSets.add(barDataSet1);
         return dataSets;
     }
 
-    private void addEntry(){
+    /*private void addEntry(){
         LineData data = mChart.getData();
 
         if (data!= null){
@@ -211,9 +259,9 @@ public class _SummaryFragment extends Fragment{
             // mChart.moveViewTo(data.getXValCount()-7, 55f,
             // AxisDependency.LEFT);
         }
-    }
+    }*/
 
-    private LineDataSet createSet(){
+    private LineDataSet createSet() {
         LineDataSet set = new LineDataSet(null, "Data from sensor");
         set.setDrawCubic(true);
         set.setCubicIntensity(0.2f);
@@ -237,7 +285,7 @@ public class _SummaryFragment extends Fragment{
     @Override
     public void onPause() {
         super.onPause();
-        mustStop=true; // Stop the infinite loop
+        mustStop = true; // Stop the infinite loop
     }
 
     @Override
@@ -248,14 +296,14 @@ public class _SummaryFragment extends Fragment{
 
             @Override
             public void run() {
-                mustStop=false;
+                mustStop = false;
                 while (!mustStop) {
 
                     getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {
-                            addEntry(); //chart notified of update in addEntry method
+                            //addEntry(); //chart notified of update in addEntry method
                         }
                     });
 
@@ -272,16 +320,12 @@ public class _SummaryFragment extends Fragment{
 
     private ArrayList<String> getXAxisValues() {
         ArrayList<String> xAxis = new ArrayList<>();
-        xAxis.add("MON");
-        xAxis.add("TUE");
-        xAxis.add("WED");
-        xAxis.add("THURS");
-        xAxis.add("FRI");
-        xAxis.add("SAT");
-        xAxis.add("SUN");
+
+        for (String key : data.keySet()) {
+            xAxis.add(key);
+        }
         return xAxis;
     }
-
 
 
     // TODO: Rename method, update argument and hook method into UI event
